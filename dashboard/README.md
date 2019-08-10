@@ -25,4 +25,4 @@ plotter.add_trace(x = x2, y = y3.tolist(), type = "bar", name = "random somethin
 
 The code above produces the following image : 
 
-![Screen Shot of dashboard in action](dashboard_screenshot.png)
+![Screen Shot of dashboard in action](dashboard_shot.png)
