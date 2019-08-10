@@ -23,6 +23,6 @@ plotter.add_trace(x = x2, y = y3.tolist(), type = "bar", name = "random somethin
 
 ```
 
-The code above produces the following image : 
+The code above produces the following page when port 8080 of the host is opened in a browser: 
 
 ![Screen Shot of dashboard in action](dashboard_shot.png)
