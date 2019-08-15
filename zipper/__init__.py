@@ -39,7 +39,7 @@ def zipper(path, name = "zipper_temp.zip", ignore="zip", logging_level = logging
 	else:
 		return None
 	
-def unzipper(filename, path ="./", logging_level = logging.ERROR, format = '%(name)s %(threadName)s %(asctime)s %(message)s', logfile = sys.stdout):
+def unzipper(filename, path ="./temp/", logging_level = logging.ERROR, format = '%(name)s %(threadName)s %(asctime)s %(message)s', logfile = sys.stdout):
 	logger = logging.Logger(name="Unzipper")
 	logger.setLevel(logging_level)
 	handler = logging.StreamHandler(logfile)
@@ -53,4 +53,4 @@ def unzipper(filename, path ="./", logging_level = logging.ERROR, format = '%(na
 	
 if __name__ == "__main__":
 	zipper("../", ignore="", logging_level = logging.DEBUG, logfile = open("logfile.txt","w+"))
-	#unzipper("zipper_temp.zip")
+	unzipper("zipper_temp.zip", logging_level = logging.DEBUG)
