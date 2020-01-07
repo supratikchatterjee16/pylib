@@ -32,7 +32,6 @@ class DashboardClient:
 			sys.exit(1)
 		self.silent = False
 	
-	
 	def dispatch(self, js_obj):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		message = json.dumps(js_obj)
@@ -230,3 +229,8 @@ class DashManager:
 		self.listener.join()
 		self.display.join()
 		print('Terminated all')
+
+#if __name__ == '__main__':
+	#man = DashManager()
+	#man.start()
+	#man.join()

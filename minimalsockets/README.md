@@ -74,35 +74,6 @@ What it provides?
 1. Easy deploying of server and sockets for the library
 2. Provides utilities for parsing JSON, 
 
-## Algorithm
-So main algorithm stands as follows.
-
-### Server Side
-
-1. Create a socket, bind it to a port, setting a timeout of 2 seconds(by default, changeable by the user).
-2. Start listening for an incoming request, handle about 10 connections at the most at any given time(can be modified by user)
-3. The first message is given an acceptable margin of 2048 bytes.
-4. It accepts all of 1kB, or whatever portion of it is necessary to be accepted
-5. Cut off first 50 bytes, extract CRC32, SHA256 and the file size
-6. If size > 4294967295, the value size is set to 0 0 0 0
-7. If size cannot be determined, the protocol, listens till a max re-read limit, which by default is 10, before closing
-8. The message size of re-reads are adjustable as well. By default, it will be 2048 bytes.
-9. The message size of re-reads will be transmitted back along with an ACK
-10. ACK will be numbered with a size if the server is waiting for more reads.
-11. In case of a CRC32/ SHA256 mismatch, a NACK1 or a NACK2 message is sent.
-
-### Client Side
-
-1. Initiate a connection with the remote server
-2. First packet size is of 2048 Bytes, so the data to be sent is 1998 bytes(2048 - 50).
-3. The socket waits and listens for an ACK, and checks if there is a size associated
-4. The subsequent messages, if any, are sent using the packet sizes mentioned by the ACK
-5. In case of a NACK1, the last allocated ACK size will be made use of, to transmit the last packet.
-6. In case of NACK2, the entire process is reiterated from the Step 2 onwards.
-7. When an ACK with no size is recieved, the transfer is assumed as complete.
-8. This will be followed by an ACK, JSON or filename/file_path(size 2038 bytes)
-9. The next ACK is acknowledged as a shut off signal.
-
 ## Using
 
 The following examples should give the entirety of flow that can be used.
@@ -133,3 +104,35 @@ socket.send_file(filepath)
 #An endless barrage of sends
 socket.dispose()
 ```
+
+## Algorithm
+
+Client Socket:
+
+1. Initiates connection with given address
+2. Calculate size(int Bytes) of message and sha256 checksum for the content
+3.	Attach size after the 4 byte crc32 code, as a 24 byte size header.
+	The first message is always 2048 bytes long if not specified otherwise by the user(yes you can change it)
+	There are 20 reserved bytes for the transfer.
+	Following this, the next messages, do not contain anything, but a 4 byte long crc32 code, as a header.
+	Failing to read a content size results in a critical failure.
+	Just as a note, longest value that can be held by 20 bytes(or 160 bits) is : 1461501637330902918203684832716283019655932542975
+	i.e. No one should have any problem, as an more than that can be broken and transferred, using the functions provided.
+3. The steps repeat till completion of the entire message, break only if no size is recieved with ACK
+4. Repeat every token that has had an NAK
+5. After transfer of the entire message, the sha256sum is sent alongwith a crc32 code.
+
+Server socket:
+
+1. Bind a socket
+2. Start listening at it
+3. Accept a connection
+4. Verify crc32sum
+5. Get size of content
+6. Decide iterations for the content(future provisions for making this component a bit 'smarter')
+7.	Read for the number of iterations, sending an ACK<accepting byte size> for every succesful recieves
+	For each unsuccesful recieve, an NAK is sent.
+	The ACK and NAK are 1 and 0 respectively. There are other codes as well. They belong to a different class
+8. After reading the number of required iterations, verify with the sha256sum
+9. Send Final ACK if it checks out (3) and NAK if it is in error(2)
+10. Finally format it to the required format, and return control to a controlling element.
